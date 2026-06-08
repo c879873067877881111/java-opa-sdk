@@ -42,12 +42,12 @@ example, `authz/allow`); it can also be provided via `-e`/`--entrypoint`.
 
 | Flag | Description |
 | ---- | ----------- |
-| `-b`, `--bundle <path>` | Bundle to load. Either a `.tar.gz`/`.tgz` produced by `opa build -t plan ...` or an unpacked directory containing `plan.json` (and optional `data.json`, `*.rego`). May be repeated. |
+| `-b`, `--bundle <path>` | **Required** (except with `--capabilities-current`). Bundle to load. Either a `.tar.gz`/`.tgz` produced by `opa build -t plan ...` or an unpacked directory containing `plan.json` (and optional `data.json`, `*.rego`). May be repeated. |
 | `-e`, `--entrypoint <name>` | Entrypoint name. Overrides the positional `ENTRYPOINT` if both are given. |
 | `-i`, `--input <path>` | Path to the JSON input document. Required unless `-I` is used. |
 | `-I`, `--stdin-input` | Read the input document from stdin instead of `-i`. |
 | `-f`, `--format <fmt>` | Output format: `json` (default, single line) or `pretty` (indented). |
-| `--capabilities-current` | Print the capabilities JSON for the currently registered builtins and exit. |
+| `--capabilities-current` | Print the capabilities JSON for the currently registered builtins and exit. When set, `-b`, `-i`/`-I`, and `ENTRYPOINT` are not required. |
 | `--metrics` | Print a metrics table after evaluation (parse / build / prepare / eval timings). |
 | `--instrument` | Alias for `--metrics`. |
 | `--profile` | Print per-location and per-statement timing tables. Implies `--metrics`. |

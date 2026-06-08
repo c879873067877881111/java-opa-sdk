@@ -81,6 +81,7 @@ public class ProfileReporter {
   private void printStatisticalProfileTable(
       List<DurationProfiler> allProfilers, String[] fileNames, int limit, String sortKey) {
     final Map<String, List<Long>> durationsByLocation = new HashMap<>();
+    final Map<String, List<Integer>> countsByLocation = new HashMap<>();
 
     for (final DurationProfiler profiler : allProfilers) {
       for (final Map.Entry<DurationProfiler.Loc, DurationProfiler.EvalTotal> entry :
@@ -92,6 +93,9 @@ public class ProfileReporter {
         durationsByLocation
             .computeIfAbsent(location, k -> new ArrayList<>())
             .add(evalTotal.getTotalDuration().toNanos());
+        countsByLocation
+            .computeIfAbsent(location, k -> new ArrayList<>())
+            .add(evalTotal.getCount());
       }
     }
 
@@ -109,7 +113,8 @@ public class ProfileReporter {
     final Map<String, ProfileStatistics> statsByLocation = new HashMap<>();
     for (final Map.Entry<String, List<Long>> entry : durationsByLocation.entrySet()) {
       final String location = entry.getKey();
-      final ProfileStatistics stats = calculateProfileStatistics(entry.getValue());
+      final List<Integer> counts = countsByLocation.get(location);
+      final ProfileStatistics stats = calculateProfileStatistics(entry.getValue(), counts);
       statsByLocation.put(location, stats);
 
       locationWidth = Math.max(locationWidth, location.length());
@@ -172,9 +177,9 @@ public class ProfileReporter {
     printStatisticalProfileBorder(locationWidth, minWidth, maxWidth, meanWidth, p90Width, p99Width);
   }
 
-  private ProfileStatistics calculateProfileStatistics(List<Long> values) {
+  private ProfileStatistics calculateProfileStatistics(List<Long> values, List<Integer> counts) {
     if (values.isEmpty()) {
-      return new ProfileStatistics(0, 0, 0, 0, 0);
+      return new ProfileStatistics(0, 0, 0, 0, 0, 0);
     }
 
     final List<Long> sorted = values.stream().sorted().collect(Collectors.toList());
@@ -187,7 +192,12 @@ public class ProfileReporter {
     final long p90 = sorted.get(Math.max(0, Math.min(p90Index, sorted.size() - 1)));
     final long p99 = sorted.get(Math.max(0, Math.min(p99Index, sorted.size() - 1)));
 
-    return new ProfileStatistics(min, max, mean, p90, p99);
+    final long meanCount =
+        counts == null || counts.isEmpty()
+            ? 0
+            : (long) counts.stream().mapToInt(v -> v).average().orElse(0);
+
+    return new ProfileStatistics(min, max, mean, p90, p99, meanCount);
   }
 
   private Comparator<ProfileRow> profileRowComparator(String sortKey) {
@@ -208,6 +218,9 @@ public class ProfileReporter {
       case "location":
         return Map.Entry.comparingByKey();
       case "num_eval":
+        return Comparator.comparingLong(
+            (Map.Entry<String, ProfileStatistics> e) -> e.getValue().meanCount)
+            .reversed();
       case "total_time":
       default:
         return Comparator.comparingLong(
@@ -313,13 +326,15 @@ public class ProfileReporter {
     final long mean;
     final long p90;
     final long p99;
+    final long meanCount;
 
-    ProfileStatistics(long min, long max, long mean, long p90, long p99) {
+    ProfileStatistics(long min, long max, long mean, long p90, long p99, long meanCount) {
       this.min = min;
       this.max = max;
       this.mean = mean;
       this.p90 = p90;
       this.p99 = p99;
+      this.meanCount = meanCount;
     }
   }
 }

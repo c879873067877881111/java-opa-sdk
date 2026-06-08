@@ -78,7 +78,7 @@ public class Eval implements Callable<Integer> {
 
   @Option(
       names = {"--instrument"},
-      description = "enable query instrumentation metrics (implies --metrics)")
+      description = "alias for --metrics")
   private boolean instrument;
 
   @Option(
@@ -223,9 +223,10 @@ public class Eval implements Callable<Integer> {
 
       final Engine engine;
       if (countIncludesLoad) {
-        metrics.timer("cli_capabilities_register").start();
+        final Metrics.Timer capabilitiesTimer = metrics.timer("cli_capabilities_register");
+        capabilitiesTimer.start();
         final Capabilities capabilities = BuiltinRegistry.generateCapabilities();
-        metrics.timer("cli_capabilities_register").stop();
+        capabilitiesTimer.stop();
 
         final Store store = new InMem();
         final Engine.Builder eb =
@@ -234,24 +235,26 @@ public class Eval implements Callable<Integer> {
                 .withCapabilities(capabilities)
                 .withEntrypoint(entrypoint);
 
-        metrics.timer("cli_load_bundles").start();
+        final Metrics.Timer loadBundlesTimer = metrics.timer("cli_load_bundles");
+        loadBundlesTimer.start();
         try {
           loadBundles(store);
         } catch (RuntimeException e) {
           System.err.println("Error loading bundles: " + e.getMessage());
           return 1;
         } finally {
-          metrics.timer("cli_load_bundles").stop();
+          loadBundlesTimer.stop();
         }
 
-        metrics.timer("cli_engine_build").start();
+        final Metrics.Timer engineBuildTimer = metrics.timer("cli_engine_build");
+        engineBuildTimer.start();
         try {
           engine = eb.build();
         } catch (RuntimeException e) {
           System.err.println("Error building engine: " + e.getMessage());
           return 1;
         } finally {
-          metrics.timer("cli_engine_build").stop();
+          engineBuildTimer.stop();
         }
 
         if (i == 0) {
@@ -287,9 +290,10 @@ public class Eval implements Callable<Integer> {
         pqBuilder = pqBuilder.withProfiler(coverageProfiler);
       }
 
-      metrics.timer("cli_prepare_query").start();
+      final Metrics.Timer prepareQueryTimer = metrics.timer("cli_prepare_query");
+      prepareQueryTimer.start();
       final Engine.PreparedQuery pq = pqBuilder.build();
-      metrics.timer("cli_prepare_query").stop();
+      prepareQueryTimer.stop();
 
       lastResults = pq.eval(inputDoc);
     }
