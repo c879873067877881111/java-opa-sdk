@@ -32,7 +32,7 @@ import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
-@Command(name = "eval")
+@Command(name = "eval", mixinStandardHelpOptions = true)
 public class Eval implements Callable<Integer> {
 
   @Option(
@@ -185,9 +185,14 @@ public class Eval implements Callable<Integer> {
               .withStore(store)
               .withCapabilities(capabilities)
               .withEntrypoint(entrypoint);
-      loadBundles(store);
-      sharedEngine = eb.build();
-      fileNames = extractFileNamesFromStore(store, entrypoint);
+      try {
+        loadBundles(store);
+        sharedEngine = eb.build();
+        fileNames = extractFileNamesFromStore(store, entrypoint);
+      } catch (RuntimeException e) {
+        System.err.println("Error preparing engine: " + e.getMessage());
+        return 1;
+      }
     }
 
     final Object inputDoc;
@@ -230,12 +235,24 @@ public class Eval implements Callable<Integer> {
                 .withEntrypoint(entrypoint);
 
         metrics.timer("cli_load_bundles").start();
-        loadBundles(store);
-        metrics.timer("cli_load_bundles").stop();
+        try {
+          loadBundles(store);
+        } catch (RuntimeException e) {
+          System.err.println("Error loading bundles: " + e.getMessage());
+          return 1;
+        } finally {
+          metrics.timer("cli_load_bundles").stop();
+        }
 
         metrics.timer("cli_engine_build").start();
-        engine = eb.build();
-        metrics.timer("cli_engine_build").stop();
+        try {
+          engine = eb.build();
+        } catch (RuntimeException e) {
+          System.err.println("Error building engine: " + e.getMessage());
+          return 1;
+        } finally {
+          metrics.timer("cli_engine_build").stop();
+        }
 
         if (i == 0) {
           fileNames = extractFileNamesFromStore(store, entrypoint);
@@ -252,7 +269,7 @@ public class Eval implements Callable<Integer> {
               .withStatementProfiler(statementProfiler)
               .withPrintHook(PrintHook.of(System.err));
 
-      if (explain) {
+      if (explain && i == 0) {
         final BufferedQueryTracer tracer = new BufferedQueryTracer();
         allTracers.add(tracer);
         pqBuilder = pqBuilder.withTracer(tracer);

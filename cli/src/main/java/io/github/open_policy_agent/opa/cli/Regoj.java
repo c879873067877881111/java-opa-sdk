@@ -8,6 +8,7 @@ import picocli.CommandLine.Command;
 
 @Command(
     name = "regoj",
+    mixinStandardHelpOptions = true,
     subcommands = {Eval.class})
 public class Regoj {
   public static void main(String[] args) {
