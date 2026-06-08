@@ -325,13 +325,6 @@ public class CliTest {
   }
 
   @Test
-  void evalCommandMissingInputFileExitsNonZero() {
-    final int exitCode =
-        run("eval", "-b", bundleTgz, "-i", "/tmp/does-not-exist-input.json", ENTRYPOINT);
-    assertThat(exitCode).isNotZero();
-  }
-
-  @Test
   void evalCommandRejectsNonPositiveCount() {
     final int exitCode =
         run("eval", "-b", bundleTgz, "-i", INPUT_JSON, "--count", "0", ENTRYPOINT);
@@ -344,5 +337,20 @@ public class CliTest {
     final int exitCode = run("eval", "-b", bundleTgz, ENTRYPOINT);
     assertThat(exitCode).isEqualTo(2);
     assertThat(errContent.toString(StandardCharsets.UTF_8)).contains("--input");
+  }
+
+  @Test
+  void evalCommandRejectsMissingBundle() {
+    final int exitCode = run("eval", "-i", INPUT_JSON, ENTRYPOINT);
+    assertThat(exitCode).isEqualTo(2);
+    assertThat(errContent.toString(StandardCharsets.UTF_8)).contains("--bundle");
+  }
+
+  @Test
+  void evalCommandUnreadableInputExitsOneWithMessage() {
+    final int exitCode =
+        run("eval", "-b", bundleTgz, "-i", "/tmp/does-not-exist-input.json", ENTRYPOINT);
+    assertThat(exitCode).isOne();
+    assertThat(errContent.toString(StandardCharsets.UTF_8)).contains("Error reading input");
   }
 }

@@ -157,6 +157,11 @@ public class Eval implements Callable<Integer> {
       return 2;
     }
 
+    if (bundleFilePaths == null || bundleFilePaths.isEmpty()) {
+      System.err.println("At least one -b/--bundle path is required");
+      return 2;
+    }
+
     if (instrument) {
       showMetrics = true;
     }
@@ -193,7 +198,8 @@ public class Eval implements Callable<Integer> {
         inputDoc = objectMapper.readValue(this.input.toFile(), Object.class);
       }
     } catch (IOException e) {
-      throw new IllegalArgumentException("Error reading input: " + e.getMessage(), e);
+      System.err.println("Error reading input: " + e.getMessage());
+      return 1;
     }
 
     for (int i = 0; i < count; i++) {
@@ -238,17 +244,19 @@ public class Eval implements Callable<Integer> {
         engine = sharedEngine;
       }
 
-      final BufferedQueryTracer tracer = new BufferedQueryTracer();
-      allTracers.add(tracer);
-
       Engine.PreparedQuery.Builder pqBuilder =
           engine
               .prepareForEvaluation()
               .withEntrypoint(entrypoint)
-              .withTracer(tracer)
               .withMetrics(metrics)
               .withStatementProfiler(statementProfiler)
               .withPrintHook(PrintHook.of(System.err));
+
+      if (explain) {
+        final BufferedQueryTracer tracer = new BufferedQueryTracer();
+        allTracers.add(tracer);
+        pqBuilder = pqBuilder.withTracer(tracer);
+      }
 
       if (showProfile) {
         final DurationProfiler profiler = new DurationProfiler();
@@ -277,7 +285,8 @@ public class Eval implements Callable<Integer> {
                 : objectMapper.writer();
         System.out.println(writer.writeValueAsString(lastResults));
       } catch (IOException e) {
-        throw new IllegalStateException("Error serializing results: " + e.getMessage(), e);
+        System.err.println("Error serializing results: " + e.getMessage());
+        return 1;
       }
     }
 
