@@ -35,7 +35,6 @@ java {
 }
 
 tasks.named<JavaExec>("run") {
-    isIgnoreExitValue = true
     workingDir = rootProject.projectDir
     standardInput = System.`in`
 }

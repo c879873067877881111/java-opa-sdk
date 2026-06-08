@@ -147,6 +147,16 @@ public class Eval implements Callable<Integer> {
       return 2;
     }
 
+    if (count < 1) {
+      System.err.println("--count must be >= 1");
+      return 2;
+    }
+
+    if (!stdinInput && input == null) {
+      System.err.println("Either -i/--input or -I/--stdin-input is required");
+      return 2;
+    }
+
     if (instrument) {
       showMetrics = true;
     }
@@ -179,10 +189,8 @@ public class Eval implements Callable<Integer> {
     try {
       if (stdinInput) {
         inputDoc = objectMapper.readValue(System.in, Object.class);
-      } else if (input != null) {
-        inputDoc = objectMapper.readValue(this.input.toFile(), Object.class);
       } else {
-        inputDoc = null;
+        inputDoc = objectMapper.readValue(this.input.toFile(), Object.class);
       }
     } catch (IOException e) {
       throw new IllegalArgumentException("Error reading input: " + e.getMessage(), e);

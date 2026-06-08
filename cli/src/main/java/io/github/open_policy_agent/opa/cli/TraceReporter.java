@@ -9,6 +9,9 @@ import java.util.List;
 public class TraceReporter {
 
   public void printTraceOutput(List<QueryTracer> allTracers, String[] fileNames) {
+    if (allTracers == null || allTracers.isEmpty()) {
+      return;
+    }
     final List<Event> events = allTracers.get(0).getEvents();
     if (events.isEmpty()) {
       return;

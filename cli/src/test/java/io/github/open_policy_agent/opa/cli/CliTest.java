@@ -330,4 +330,19 @@ public class CliTest {
         run("eval", "-b", bundleTgz, "-i", "/tmp/does-not-exist-input.json", ENTRYPOINT);
     assertThat(exitCode).isNotZero();
   }
+
+  @Test
+  void evalCommandRejectsNonPositiveCount() {
+    final int exitCode =
+        run("eval", "-b", bundleTgz, "-i", INPUT_JSON, "--count", "0", ENTRYPOINT);
+    assertThat(exitCode).isEqualTo(2);
+    assertThat(errContent.toString(StandardCharsets.UTF_8)).contains("--count");
+  }
+
+  @Test
+  void evalCommandRejectsMissingInput() {
+    final int exitCode = run("eval", "-b", bundleTgz, ENTRYPOINT);
+    assertThat(exitCode).isEqualTo(2);
+    assertThat(errContent.toString(StandardCharsets.UTF_8)).contains("--input");
+  }
 }

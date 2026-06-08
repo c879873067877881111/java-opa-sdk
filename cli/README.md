@@ -8,7 +8,7 @@
 
 `regoj` is a small command-line driver for the Java OPA SDK. It loads a
 pre-compiled rego plan bundle, evaluates an entrypoint against an input
-document, and (optionally) prints metrics, traces, and per-statletement /
+document, and (optionally) prints metrics, traces, and per-statement /
 per-location profiling tables.
 
 ## Building & running
@@ -66,7 +66,7 @@ example, `authz/allow`); it can also be provided via `-e`/`--entrypoint`.
 
 The test resources include a small unpacked plan bundle in
 `ir_simple_dir/`, plus a sample `input.json`. All examples are run from the
-`cli/` module directory.
+repository root.
 
 Evaluate against the directory bundle:
 
