@@ -22,6 +22,7 @@ dependencies {
 
 application {
     mainClass = "io.github.open_policy_agent.opa.cli.Regoj"
+    applicationName = "regoj"
 }
 
 tasks.test {

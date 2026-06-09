@@ -307,10 +307,22 @@ public class Eval implements Callable<Integer> {
 
       final Metrics.Timer prepareQueryTimer = metrics.timer("cli_prepare_query");
       prepareQueryTimer.start();
-      final Engine.PreparedQuery pq = pqBuilder.build();
-      prepareQueryTimer.stop();
+      final Engine.PreparedQuery pq;
+      try {
+        pq = pqBuilder.build();
+      } catch (RuntimeException e) {
+        System.err.println("Error preparing query: " + e.getMessage());
+        return 1;
+      } finally {
+        prepareQueryTimer.stop();
+      }
 
-      lastResults = pq.eval(inputDoc);
+      try {
+        lastResults = pq.eval(inputDoc);
+      } catch (RuntimeException e) {
+        System.err.println("Error evaluating query: " + e.getMessage());
+        return 1;
+      }
     }
 
     if (lastResults != null) {

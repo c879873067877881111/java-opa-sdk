@@ -24,7 +24,7 @@ To produce a runnable distribution:
 
 ```bash
 ./gradlew :cli:installDist
-./cli/build/install/cli/bin/cli eval --help
+./cli/build/install/regoj/bin/regoj eval --help
 ```
 
 ## `eval` subcommand
