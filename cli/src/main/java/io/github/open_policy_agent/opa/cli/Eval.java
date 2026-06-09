@@ -162,6 +162,21 @@ public class Eval implements Callable<Integer> {
       return 2;
     }
 
+    if (!"json".equalsIgnoreCase(format) && !"pretty".equalsIgnoreCase(format)) {
+      System.err.println("Invalid --format value '" + format + "' (allowed: json, pretty)");
+      return 2;
+    }
+
+    if (!"total_time".equalsIgnoreCase(profileSort)
+        && !"num_eval".equalsIgnoreCase(profileSort)
+        && !"location".equalsIgnoreCase(profileSort)) {
+      System.err.println(
+          "Invalid --profile-sort value '"
+              + profileSort
+              + "' (allowed: total_time, num_eval, location)");
+      return 2;
+    }
+
     if (instrument) {
       showMetrics = true;
     }

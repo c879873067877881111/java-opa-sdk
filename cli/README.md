@@ -46,13 +46,13 @@ example, `authz/allow`); it can also be provided via `-e`/`--entrypoint`.
 | `-e`, `--entrypoint <name>` | Entrypoint name. Overrides the positional `ENTRYPOINT` if both are given. |
 | `-i`, `--input <path>` | Path to the JSON input document. Required unless `-I` is used. |
 | `-I`, `--stdin-input` | Read the input document from stdin instead of `-i`. |
-| `-f`, `--format <fmt>` | Output format: `json` (default, single line) or `pretty` (indented). |
+| `-f`, `--format <fmt>` | Output format: `json` (default, single line) or `pretty` (indented). Any other value exits 2. |
 | `--capabilities-current` | Print the capabilities JSON for the currently registered builtins and exit. When set, `-b`, `-i`/`-I`, and `ENTRYPOINT` are not required. |
 | `--metrics` | Print a metrics table after evaluation (parse / build / prepare / eval timings). |
 | `--instrument` | Alias for `--metrics`. |
 | `--profile` | Print per-location and per-statement timing tables. Implies `--metrics`. |
 | `--profile-limit <n>` | Cap the profile table to the top `n` rows (default `10`). |
-| `--profile-sort <key>` | Profiler sort key: `total_time` (default), `num_eval`, or `location`. |
+| `--profile-sort <key>` | Profiler sort key: `total_time` (default), `num_eval`, or `location`. Any other value exits 2. |
 | `--coverage` | Print a per-file table of executed source lines after evaluation. |
 | `--explain` | Print a step-by-step trace of statements entered and exited during evaluation. With `--count > 1`, only the first run's trace is printed. |
 | `--fail` | Exit with a non-zero status if the result is undefined / empty. |

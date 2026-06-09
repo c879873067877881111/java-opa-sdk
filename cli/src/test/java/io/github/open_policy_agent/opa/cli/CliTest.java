@@ -353,4 +353,33 @@ public class CliTest {
     assertThat(exitCode).isOne();
     assertThat(errContent.toString(StandardCharsets.UTF_8)).contains("Error reading input");
   }
+
+  @Test
+  void evalCommandRejectsUnknownFormat() {
+    final int exitCode =
+        run("eval", "-b", bundleTgz, "-i", INPUT_JSON, "--format", "jsno", ENTRYPOINT);
+    assertThat(exitCode).isEqualTo(2);
+    assertThat(errContent.toString(StandardCharsets.UTF_8))
+        .contains("Invalid --format")
+        .contains("jsno");
+  }
+
+  @Test
+  void evalCommandRejectsUnknownProfileSort() {
+    final int exitCode =
+        run(
+            "eval",
+            "-b",
+            bundleTgz,
+            "-i",
+            INPUT_JSON,
+            "--profile",
+            "--profile-sort",
+            "bogus",
+            ENTRYPOINT);
+    assertThat(exitCode).isEqualTo(2);
+    assertThat(errContent.toString(StandardCharsets.UTF_8))
+        .contains("Invalid --profile-sort")
+        .contains("bogus");
+  }
 }
