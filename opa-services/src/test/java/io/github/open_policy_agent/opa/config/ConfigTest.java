@@ -293,6 +293,8 @@ class ConfigTest {
 
     assertFalse(status.getConsole());
     assertEquals("/status", status.getResource());
+    assertNull(status.getMinDelaySeconds());
+    assertNull(status.getMaxDelaySeconds());
   }
 
   @Test
