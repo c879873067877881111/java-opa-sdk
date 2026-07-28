@@ -142,6 +142,7 @@ public class JsonBuiltins implements BuiltinProvider {
     result.put("json.remove", instance::remove);
     result.put("json.unmarshal", instance::unmarshal);
     result.put("json.verify_schema", instance::verify_schema);
+    result.put("yaml.is_valid", instance::yamlIsValid);
     result.put("yaml.marshal", instance::yamlMarshal);
     result.put("yaml.unmarshal", instance::yamlUnmarshal);
     return result;
@@ -722,6 +723,28 @@ public class JsonBuiltins implements BuiltinProvider {
       return new RegoString(yaml);
     } catch (JsonProcessingException e) {
       throw new BuiltinError("yaml.marshal: " + e.getMessage());
+    }
+  }
+
+  @OpaBuiltin(
+          name = "yaml.is_valid",
+          description = "Verifies the input string is a valid YAML document.",
+          categories = {"encoding"},
+          args = {@OpaType(type = "string", name = "x", description = "a YAML string")},
+          result =
+          @OpaType(
+                  name = "result",
+                  description = "`true` if `x` is valid YAML, `false` otherwise"))
+  public RegoBoolean yamlIsValid(EvaluationContext ctx, RegoValue[] args) {
+    if (!(args[0] instanceof RegoString yamlInput)) {
+      return RegoBoolean.FALSE;
+    }
+
+    try {
+      YAML_MAPPER.readTree(yamlInput.getValue());
+      return RegoBoolean.TRUE;
+    } catch (JsonProcessingException e) {
+      return RegoBoolean.FALSE;
     }
   }
 
