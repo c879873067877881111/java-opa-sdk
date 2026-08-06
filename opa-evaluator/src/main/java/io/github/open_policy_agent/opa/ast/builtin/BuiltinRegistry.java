@@ -39,6 +39,7 @@ public class BuiltinRegistry {
     ArrayBuiltins.class,
     EncodingBuiltins.class,
     HexBuiltins.class,
+    UriBuiltins.class,
     StringBuiltins.class,
     PrintBuiltins.class,
     OpaBuiltins.class,
