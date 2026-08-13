@@ -50,8 +50,8 @@ public abstract class BundleDownloader {
   protected String service;
   protected String resource;
   protected Config.PollingConfig polling;
-  protected String etag;
-  protected long lastModifiedTime = 0;
+  protected volatile String etag;
+  protected volatile long lastModifiedTime = 0;
   protected long maxSizeBytes = Config.BundleConfig.DEFAULT_MAX_SIZE_BYTES;
 
   // Fallback when no service config is available; matches the response_header_timeout_seconds
@@ -349,14 +349,10 @@ public abstract class BundleDownloader {
 
     HttpRequest request = requestBuilder.build();
 
-    CompletableFuture<HttpResponse<InputStream>> exchange =
-        httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofInputStream());
-    return exchange
+    return httpClient
+        .sendAsync(request, HttpResponse.BodyHandlers.ofInputStream())
         .handle(
             (response, throwable) -> {
-              if (throwable != null) {
-                exchange.cancel(true);
-              }
               handleHttpResponse(response, throwable);
               return null;
             });
