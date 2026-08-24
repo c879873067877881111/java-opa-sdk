@@ -96,6 +96,7 @@ Note: String builtins (`contains`, `concat`, `split`, `sprintf`, `trim`, etc.) a
 | `net.cidr_is_valid`, `net.lookup_ip_addr` | Yes |
 | **Graphs** (opa-evaluator) | |
 | `graph.reachable`, `graph.reachable_paths` | Yes |
+| `walk` | Yes |
 | **Semantic Versions** (opa-builtins-semver) | |
 | `semver.compare`, `semver.is_valid` | Yes |
 | **Providers** (opa-builtins-providers-aws) | |

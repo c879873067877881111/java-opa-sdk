@@ -63,6 +63,3 @@ urlquery.decode
 urlquery.decode_object
 urlquery.encode
 urlquery.encode_object
-
-# Delete this line along with the walk implementation in #141.
-walk
