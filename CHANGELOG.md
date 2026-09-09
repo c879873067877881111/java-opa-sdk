@@ -19,7 +19,8 @@ project adheres to [Semantic Versioning](http://semver.org/).
   previously covered only `Metrics.Timer`
 - Saturate `SimpleMetrics` histogram stats at the `int` bounds instead of
   wrapping. `Histogram.Values` holds `int`s, but nanosecond timings pass
-  `Integer.MAX_VALUE` after 2.15s, so a 3s sample reported `-1294967296`
+  `Integer.MAX_VALUE` after 2.147s, so a 3s sample reported `-1294967296` for
+  every stat, and the sign flipped both ways
 
 ## 0.4.0
 
