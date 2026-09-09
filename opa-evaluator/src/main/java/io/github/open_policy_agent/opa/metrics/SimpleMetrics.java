@@ -172,7 +172,9 @@ public class SimpleMetrics implements Metrics {
     }
 
     private static int round(double value) {
-      return (int) Math.round(value);
+      // Values' fields are int, but Go feeds histograms nanosecond timings, which pass
+      // Integer.MAX_VALUE after 2.15s. Saturate rather than let the cast wrap, as count does.
+      return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, Math.round(value)));
     }
   }
 }

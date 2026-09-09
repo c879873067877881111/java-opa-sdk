@@ -132,4 +132,31 @@ class SimpleMetricsTest {
     assertTrue(table.contains("histogram_sizes_count"), table);
     assertTrue(table.contains("histogram_sizes_99.99%"), table);
   }
+
+  @Test
+  void histogram_saturatesStatsAboveIntRange() {
+    // Go feeds histograms nanosecond timings, and Integer.MAX_VALUE nanoseconds is only 2.15s.
+    // Values' fields are int, so saturate the way count already does rather than wrap negative.
+    Histogram histogram = new SimpleMetrics().histogram("eval_ns");
+    histogram.update(3e9);
+
+    Histogram.Values values = histogram.value();
+
+    assertEquals(Integer.MAX_VALUE, values.min);
+    assertEquals(Integer.MAX_VALUE, values.max);
+    assertEquals(Integer.MAX_VALUE, values.mean);
+    assertEquals(Integer.MAX_VALUE, values.median);
+    assertEquals(Integer.MAX_VALUE, values.percentiles.get("99%"));
+  }
+
+  @Test
+  void histogram_saturatesStatsBelowIntRange() {
+    Histogram histogram = new SimpleMetrics().histogram("drift");
+    histogram.update(-3e9);
+
+    Histogram.Values values = histogram.value();
+
+    assertEquals(Integer.MIN_VALUE, values.min);
+    assertEquals(Integer.MIN_VALUE, values.max);
+  }
 }
