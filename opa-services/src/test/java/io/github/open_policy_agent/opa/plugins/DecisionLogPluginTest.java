@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import io.github.open_policy_agent.opa.config.Config;
 import io.github.open_policy_agent.opa.logging.Logger;
+import io.github.open_policy_agent.opa.metrics.Metrics;
 import io.github.open_policy_agent.opa.metrics.SimpleMetrics;
 import io.github.open_policy_agent.opa.storage.InMem;
 import io.github.open_policy_agent.opa.storage.Store;
@@ -764,5 +765,51 @@ class DecisionLogPluginTest {
     assertEquals(3, metricsNode.get("counter_server_query_cache_hit").asInt());
     assertEquals(1, metricsNode.get("histogram_eval_ns").get("count").asInt());
     assertEquals(11, metricsNode.get("histogram_eval_ns").get("99%").asInt());
+  }
+
+  /** A Metric that is none of the three known types, but is serializable by Jackson. */
+  private static final class CustomMetric implements Metrics.Metric {
+    public int getValue() {
+      return 7;
+    }
+  }
+
+  @Test
+  void decisionLogs_unknownMetricType_fallsBackToItsBareName() {
+    Config.DecisionLogsConfig decisionLogs =
+        new Config.DecisionLogsConfig().setConsole(true).setService("test-service");
+    config.setDecisionLogs(decisionLogs);
+
+    manager =
+        new PluginManager.Builder()
+            .withId("test-opa")
+            .withStore(store)
+            .withConfig(config)
+            .withLogger(mockLogger)
+            .build();
+
+    DecisionLogPlugin plugin = new DecisionLogPlugin();
+    plugin = (DecisionLogPlugin) plugin.initialize(manager);
+    plugin.start();
+
+    // Metrics is a public interface, so an implementation can report metrics that are none of
+    // Timer/Counter/Histogram. Go's formatKey keeps those under the bare name; so do we.
+    Metrics metrics = mock(Metrics.class);
+    when(metrics.all()).thenReturn(Collections.singletonMap("custom", new CustomMetric()));
+
+    JsonNode input = mapper.createObjectNode().put("user", "frank");
+    JsonNode result = mapper.createObjectNode().put("allow", true);
+
+    plugin
+        .getDecisionLogs()
+        .logDecision("decision-custom", input, result, "data.authz.allow", null, 0, metrics, null);
+
+    verify(mockLogger, never()).error(anyString(), any());
+
+    ArgumentCaptor<String> logged = ArgumentCaptor.forClass(String.class);
+    verify(mockLogger, atLeastOnce()).info(eq("Decision: %s"), logged.capture());
+    JsonNode event = assertDoesNotThrow(() -> mapper.readTree(logged.getValue()));
+
+    assertEquals(7, event.get("metrics").get("custom").get("value").asInt());
   }
 }
