@@ -135,7 +135,7 @@ class SimpleMetricsTest {
 
   @Test
   void histogram_saturatesStatsAboveIntRange() {
-    // Go feeds histograms nanosecond timings, and Integer.MAX_VALUE nanoseconds is only 2.15s.
+    // Go feeds histograms nanosecond timings, and Integer.MAX_VALUE nanoseconds is only 2.147s.
     // Values' fields are int, so saturate the way count already does rather than wrap negative.
     Histogram histogram = new SimpleMetrics().histogram("eval_ns");
     histogram.update(3e9);
